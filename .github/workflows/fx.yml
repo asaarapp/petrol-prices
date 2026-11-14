@@ -62,6 +62,22 @@ jobs:
               "SAR": ("الريال السعودي", "Saudi Riyal", "ريال", "SAR"),
               "OMR": ("الريال العماني", "Omani Rial", "ريال", "OMR"),
               "KWD": ("الدينار الكويتي", "Kuwaiti Dinar", "دينار", "KWD"),
+              # ➕ جاليات كبيرة في الإمارات
+              "SDG": ("الجنيه السوداني", "Sudanese Pound", "جنيه سوداني", "SDG"),
+              "YER": ("الريال اليمني", "Yemeni Rial", "ريال يمني", "YER"),
+              "SYP": ("الليرة السورية", "Syrian Pound", "ليرة سورية", "SYP"),
+              "LBP": ("الليرة اللبنانية", "Lebanese Pound", "ليرة لبنانية", "LBP"),
+              "IQD": ("الدينار العراقي", "Iraqi Dinar", "دينار عراقي", "IQD"),
+              "SOS": ("الشلن الصومالي", "Somali Shilling", "شلن", "SOS"),
+              "ILS": ("الشيكل", "Shekel", "شيكل", "ILS"),
+              "BHD": ("الدينار البحريني", "Bahraini Dinar", "دينار", "BHD"),
+              "QAR": ("الريال القطري", "Qatari Riyal", "ريال قطري", "QAR"),
+              "VND": ("الدونغ الفيتنامي", "Vietnamese Dong", "دونغ", "VND"),
+              "THB": ("البات التايلندي", "Thai Baht", "بات", "THB"),
+              "MYR": ("الرينغيت الماليزي", "Malaysian Ringgit", "رينغيت", "MYR"),
+              "CAD": ("الدولار الكندي", "Canadian Dollar", "دولار كندي", "CAD"),
+              "AUD": ("الدولار الأسترالي", "Australian Dollar", "دولار أسترالي", "AUD"),
+              "ZAR": ("الراند الجنوب أفريقي", "South African Rand", "راند", "ZAR"),
               "USD": ("الدولار الأمريكي", "US Dollar", "دولار", "USD"),
               "EUR": ("اليورو", "Euro", "يورو", "EUR"),
               "GBP": ("الجنيه الإسترليني", "British Pound", "جنيه", "GBP"),
@@ -146,6 +162,51 @@ jobs:
               return rows
 
 
+          def fill_history(d, codes, rates):
+              """عملات جديدة ما لها تاريخ: نجيب سنة من Yahoo، والناقص من currency-api يوم بيوم"""
+              got = {}
+              for c in codes:
+                  j = get(f"https://query1.finance.yahoo.com/v8/finance/chart/{c}=X?range=1y&interval=1d")
+                  try:
+                      res = j["chart"]["result"][0]
+                      for ts, v in zip(res["timestamp"], res["indicators"]["quote"][0]["close"]):
+                          if v is None or v <= 0:
+                              continue
+                          day = (datetime.datetime.utcfromtimestamp(ts) + datetime.timedelta(hours=4)).strftime("%Y-%m-%d")
+                          got.setdefault(c, {})[day] = r5(v / AED_PER_USD)
+                  except Exception as e:
+                      print("history failed (yahoo)", c, e)
+              rest = [c for c in codes if len(got.get(c, {})) < 20]
+              if rest:
+                  for k in range(1, 121):
+                      day = (now - datetime.timedelta(days=k)).strftime("%Y-%m-%d")
+                      j = get(f"https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@{day}/v1/currencies/aed.json")
+                      try:
+                          r = j["aed"]
+                          for c in rest:
+                              v = r.get(c.lower())
+                              if v:
+                                  got.setdefault(c, {})[day] = r5(v)
+                      except Exception:
+                          pass
+              # نوحّد مع سعر اليوم (عشان ما يطلع فرق كبير وهمي) ونحطها في الجدول
+              for c in codes:
+                  series = got.get(c, {})
+                  if not series or not rates.get(c):
+                      print("no history for", c)
+                      continue
+                  i = CODES.index(c)
+                  ratio = rates[c] / series[max(series)]
+                  if abs(ratio - 1) <= 0.004:
+                      ratio = 1
+                  n = 0
+                  for r in d:
+                      if r[0] < today and not r[1 + i] and r[0] in series:
+                          r[1 + i] = r5(series[r[0]] * ratio)
+                          n += 1
+                  print("history filled", c, n, "days, ratio", round(ratio, 4))
+
+
           def main():
               rates, src = latest()
               if not rates:
@@ -166,6 +227,13 @@ jobs:
                   rows = backfill()
                   if rows:
                       hist["d"] = rows
+
+              # عملات جديدة (أو ناقصة) ما لها تاريخ كافي: نعبيه مرة وحدة
+              missing = [c for i, c in enumerate(CODES)
+                         if c != "USD" and sum(1 for r in hist["d"] if r[1 + i]) < 20]
+              if hist["d"] and missing:
+                  print("filling history for", missing)
+                  fill_history(hist["d"], missing, rates)
 
               # مرة وحدة: نوحّد التاريخ القديم (من Yahoo) مع مصدرنا اليومي، عشان ما يطلع فرق كبير وهمي
               d = hist["d"]
