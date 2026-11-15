@@ -260,6 +260,37 @@ jobs:
               json.dump(hist, open("gold_history.json", "w", encoding="utf-8"), ensure_ascii=False, separators=(",", ":"))
               print("saved", k, "pct", round(pct, 2))
           
+              # 🌍 باقي الدول: نفس التنبيه بالسعر العالمي وعملة الدولة (قناة gold_move_sa_ar …)
+              try:
+                  fxr = json.load(open("fx.json", encoding="utf-8")).get("r", {})
+              except Exception:
+                  fxr = {}
+              others = {"sa": ("SAR", "ريال"), "kw": ("KWD", "دينار"), "qa": ("QAR", "ريال"), "bh": ("BHD", "دينار"),
+                        "om": ("OMR", "ريال"), "eg": ("EGP", "جنيه"), "jo": ("JOD", "دينار"), "iq": ("IQD", "دينار"),
+                        "ma": ("MAD", "درهم"), "tn": ("TND", "دينار")}
+              base = (gold * AED_PER_USD / OZ) / k["24"] if k.get("24") else 0
+              extra = []
+              for cc, (cur, cur_ar) in others.items():
+                  rate = fxr.get(cur)
+                  if not rate or not base:
+                      continue
+                  kc = {kk: v * base * rate for kk, v in k.items()}
+                  fmt = (lambda v: f"{v:,.0f}") if rate > 50 else (lambda v: f"{v:.2f}")
+                  for topic, title, _ in messages:
+                      t = topic.replace("gold_", f"gold_{cc}_", 1).replace(f"gold_{cc}_move_", f"gold_move_{cc}_").replace(f"gold_{cc}_daily_", f"gold_daily_{cc}_")
+                      if topic == "gold_move_ar":
+                          body = f"عيار ٢٤: {fmt(kc['24'])} {cur_ar} • عيار ٢٢: {fmt(kc['22'])} {cur_ar}"
+                      elif topic == "gold_move_en":
+                          body = f"24K: {cur} {fmt(kc['24'])} • 22K: {cur} {fmt(kc['22'])}"
+                      elif topic == "gold_daily_ar":
+                          body = f"عيار ٢٤: {fmt(kc['24'])} • ٢٢: {fmt(kc['22'])} • ٢١: {fmt(kc['21'])} {cur_ar}"
+                      elif topic == "gold_daily_en":
+                          body = f"24K: {fmt(kc['24'])} • 22K: {fmt(kc['22'])} • 21K: {fmt(kc['21'])} {cur}"
+                      else:
+                          continue
+                      extra.append((t, title, body))
+              messages += extra
+
               if messages and os.environ.get("FIREBASE_KEY"):
                   send(messages)
           
