@@ -43,8 +43,9 @@ jobs:
           # نسبة كل عيار من عيار ٢٤ (نفس نسب أسعار دبي المنشورة)
           KARAT_RATIO = {"24": 1.0, "22": 0.9262, "21": 0.888, "18": 0.761}
           
-          # فرق السعر المحلي عن العالمي (١ = نفس السعر العالمي). نعدله لو لقينا فرق ثابت
-          UAE_PREMIUM = 1.0
+          # فرق السعر المحلي عن العالمي: سعر مجموعة دبي للذهب الرسمي أعلى من العالمي بحوالي ٢٪
+          # (١٥ نوفمبر ٢٠٢٦: العالمي 3887.6$ ← 459.0 درهم، والرسمي 468.00 درهم = 1.0196)
+          UAE_PREMIUM = 1.0196
           INDIA_DUTY = 1.06        # جمارك الذهب في الهند ٦٪ (الأسعار هناك تنعرض بدون ضريبة GST)
           PK_PREMIUM = 1.0         # فرق سوق الذهب في باكستان عن العالمي (تقريبي)
           
@@ -164,7 +165,18 @@ jobs:
                   rows = backfill()
                   if rows:
                       hist["d"] = rows
+                      hist["premium"] = UAE_PREMIUM   # التاريخ الجديد محسوب بالفرق الحالي
           
+              # تغيّر فرق السعر المحلي؟ نعدّل التاريخ القديم بنفس النسبة عشان الرسم ما يقفز
+              old_prem = hist.get("premium", 1.0)
+              if abs(old_prem - UAE_PREMIUM) > 1e-6:
+                  f = UAE_PREMIUM / old_prem
+                  for r in hist.get("d", []):
+                      r[1] = q(r[1] * f)
+                  old["hours"] = [[h[0], q(h[1] * f)] for h in old.get("hours", [])]
+                  hist["premium"] = UAE_PREMIUM
+                  print("rescaled history by", round(f, 4))
+
               k = karats(gold)
               silver_g = round(silver * AED_PER_USD / OZ, 3)
           
