@@ -278,40 +278,63 @@ jobs:
               # ================= الإشعارات (لكل عملة موضوع خاص) =================
               messages = []
               alerted = data["alerted"]
-              for c in CODES:
-                  now_v, prev_v = rates.get(c), prev.get(c)
-                  if not now_v or not prev_v:
+              # 🌍 عملة كل دولة (العملة الأساسية في التطبيق): الإمارات قناتها fx_INR_ar، والباقي fx_SAR_INR_ar …
+              BASES = {
+                  "AED": ("الدرهم", "درهم", "AED"), "SAR": ("الريال السعودي", "ريال", "SAR"),
+                  "KWD": ("الدينار الكويتي", "دينار", "KWD"), "QAR": ("الريال القطري", "ريال", "QAR"),
+                  "BHD": ("الدينار البحريني", "دينار", "BHD"), "OMR": ("الريال العماني", "ريال", "OMR"),
+                  "EGP": ("الجنيه المصري", "جنيه", "EGP"), "JOD": ("الدينار الأردني", "دينار", "JOD"),
+                  "IQD": ("الدينار العراقي", "دينار", "IQD"), "MAD": ("الدرهم المغربي", "درهم", "MAD"),
+                  "TND": ("الدينار التونسي", "دينار", "TND"),
+              }
+              CUR_ALL = dict(CUR)
+              CUR_ALL["AED"] = ("الدرهم الإماراتي", "UAE Dirham", "درهم إماراتي", "AED")
+              rates_all = dict(rates); rates_all["AED"] = 1.0
+              prev_all = dict(prev); prev_all["AED"] = 1.0
+              for base, (base_name_ar, base_unit_ar, base_en) in BASES.items():
+                  b_now, b_prev = rates_all.get(base), prev_all.get(base)
+                  if not b_now or not b_prev:
                       continue
-                  pct = (now_v - prev_v) / prev_v * 100
-                  name_ar, name_en, unit_ar, unit_en = CUR[c]
-                  inv = now_v < 1   # العملات الأغلى من الدرهم نعرضها بالعكس
-                  shown = 1 / now_v if inv else now_v
-                  line_ar = f"١ {unit_ar} = {shown:,.2f} درهم" if inv else f"١ درهم = {shown:,.2f} {unit_ar}"
-                  line_en = f"1 {unit_en} = AED {shown:,.2f}" if inv else f"1 AED = {shown:,.2f} {unit_en}"
+                  pre = "" if base == "AED" else base + "_"
+                  akey = "" if base == "AED" else base + ":"
+                  for c in list(CODES) + ([] if base == "AED" else ["AED"]):
+                      if c == base or c not in CUR_ALL:
+                          continue
+                      if rates_all.get(c) is None or prev_all.get(c) is None:
+                          continue
+                      now_v, prev_v = rates_all[c] / b_now, prev_all[c] / b_prev
+                      if not now_v or not prev_v:
+                          continue
+                      pct = (now_v - prev_v) / prev_v * 100
+                      name_ar, name_en, unit_ar, unit_en = CUR_ALL[c]
+                      inv = now_v < 1   # العملات الأغلى من عملتنا نعرضها بالعكس
+                      shown = 1 / now_v if inv else now_v
+                      line_ar = f"١ {unit_ar} = {shown:,.2f} {base_unit_ar}" if inv else f"١ {base_unit_ar} = {shown:,.2f} {unit_ar}"
+                      line_en = f"1 {unit_en} = {base_en} {shown:,.2f}" if inv else f"1 {base_en} = {shown:,.2f} {unit_en}"
 
-                  direction = "up" if pct > 0 else "down"
-                  if abs(pct) >= MOVE_ALERT_PCT and alerted.get(c) != today + direction:
-                      alerted[c] = today + direction
-                      if pct > 0:
-                          t_ar = f"📈 الدرهم ارتفع {abs(pct):.1f}٪ مقابل {name_ar}"
-                          b_ar = f"{line_ar} • وقت مناسب للتحويل 💸"
-                          t_en = f"📈 AED is up {abs(pct):.1f}% vs {name_en}"
-                          b_en = f"{line_en} • A good time to send money 💸"
-                      else:
-                          t_ar = f"📉 الدرهم انخفض {abs(pct):.1f}٪ مقابل {name_ar}"
-                          b_ar = line_ar
-                          t_en = f"📉 AED is down {abs(pct):.1f}% vs {name_en}"
-                          b_en = line_en
-                      messages += [(f"fx_{c}_ar", t_ar, b_ar), (f"fx_{c}_en", t_en, b_en)]
+                      direction = "up" if pct > 0 else "down"
+                      if abs(pct) >= MOVE_ALERT_PCT and alerted.get(akey + c) != today + direction:
+                          alerted[akey + c] = today + direction
+                          if pct > 0:
+                              t_ar = f"📈 {base_name_ar} ارتفع {abs(pct):.1f}٪ مقابل {name_ar}"
+                              b_ar = f"{line_ar} • وقت مناسب للتحويل 💸"
+                              t_en = f"📈 {base_en} is up {abs(pct):.1f}% vs {name_en}"
+                              b_en = f"{line_en} • A good time to send money 💸"
+                          else:
+                              t_ar = f"📉 {base_name_ar} انخفض {abs(pct):.1f}٪ مقابل {name_ar}"
+                              b_ar = line_ar
+                              t_en = f"📉 {base_en} is down {abs(pct):.1f}% vs {name_en}"
+                              b_en = line_en
+                          messages += [(f"fx_{pre}{c}_ar", t_ar, b_ar), (f"fx_{pre}{c}_en", t_en, b_en)]
 
-                  # ملخص الصبح الساعة ٩ (للي مشترك فيه)
-                  if now.hour == 9 and alerted.get("daily_" + c) != today:
-                      alerted["daily_" + c] = today
-                      sign = "⬆️" if pct > 0.05 else ("⬇️" if pct < -0.05 else "➖")
-                      messages += [
-                          (f"fxd_{c}_ar", f"☀️ سعر {name_ar} اليوم {sign}", line_ar),
-                          (f"fxd_{c}_en", f"☀️ {name_en} today {sign}", line_en),
-                      ]
+                      # ملخص الصبح الساعة ٩ (للي مشترك فيه)
+                      if now.hour == 9 and alerted.get("daily_" + akey + c) != today:
+                          alerted["daily_" + akey + c] = today
+                          sign = "⬆️" if pct > 0.05 else ("⬇️" if pct < -0.05 else "➖")
+                          messages += [
+                              (f"fxd_{pre}{c}_ar", f"☀️ سعر {name_ar} اليوم {sign}", line_ar),
+                              (f"fxd_{pre}{c}_en", f"☀️ {name_en} today {sign}", line_en),
+                          ]
 
               json.dump(data, open("fx.json", "w", encoding="utf-8"), ensure_ascii=False, indent=1)
               json.dump(hist, open("fx_history.json", "w", encoding="utf-8"), ensure_ascii=False, separators=(",", ":"))
