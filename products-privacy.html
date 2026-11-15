@@ -32,7 +32,7 @@
 </header>
 <main>
 <section>
-  <p class="muted">آخر تحديث: ١٣ نوفمبر ٢٠٢٦</p>
+  <p class="muted">آخر تحديث: ١٥ نوفمبر ٢٠٢٦</p>
 
   <h2>باختصار</h2>
   <p>لا نطلب منك التسجيل، ولا نعرف اسمك أو رقمك أو موقعك. سلتك وقائمة مشترياتك وأسعارك تُحفظ في هاتفك فقط.</p>
@@ -42,14 +42,19 @@
     <li>اللغة، والميزانية، والإمارة التي اخترتها لمواقيت الصلاة.</li>
     <li>السلة الحالية، وقائمة المشتريات.</li>
     <li>أسماء المنتجات وآخر سعر لكل باركود صوّرته (ليذكّرك البرنامج بالسعر في المرة القادمة).</li>
+    <li>المحلات التي تختارها وأسعارك فيها، ومجموع مشاويرك وصرفك الشهري.</li>
   </ul>
   <p>هذه المعلومات لا تصل إلينا أبداً، وتُحذف عند حذف التطبيق أو مسح بياناته من إعدادات الهاتف.</p>
 
   <h2>الكاميرا والصور</h2>
   <ul>
-    <li><b>الباركود:</b> يستخدم التطبيق قارئ الباركود من Google (خدمات Google Play). لا يحصل التطبيق على صلاحية الكاميرا، ويستلم رقم الباركود فقط.</li>
-    <li><b>صورة السعر:</b> عند تصوير ورقة السعر، تُقرأ الأرقام داخل هاتفك (بدون إنترنت). تُحفظ الصورة مؤقتاً في هاتفك وتُستبدل بالصورة التالية، ولا تُرسل لأي جهة.</li>
+    <li><b>الكاميرا:</b> يطلب التطبيق إذن الكاميرا لقراءة ملصق السعر مباشرة. تُقرأ الصورة داخل هاتفك (بدون إنترنت) ولا تُحفظ ولا تُرسل لأي جهة. الكاميرا تعمل فقط وأنت فاتح شاشة التصوير.</li>
+    <li><b>الباركود:</b> يُقرأ داخل هاتفك باستخدام أدوات Google (ML Kit) ويستلم التطبيق رقم الباركود فقط.</li>
+    <li><b>صورة السعر وفاتورة الكاشير:</b> تُقرأ الأرقام والأصناف داخل هاتفك (بدون إنترنت) لمقارنتها مع سلتك. تُحفظ الصورة مؤقتاً في هاتفك وتُستبدل بالصورة التالية، ولا تُرسل لأي جهة.</li>
   </ul>
+
+  <h2>الترجمة</h2>
+  <p>ليشطب التطبيق الغرض من قائمتك حتى لو كان الملصق بلغة ثانية، يترجم أسماء الأغراض (عربي ↔ إنجليزي) داخل هاتفك باستخدام مترجم Google (ML Kit). يُحمَّل ملف اللغة من Google مرة واحدة، وبعدها تتم الترجمة بدون إنترنت، ولا تُرسل قائمتك لأي جهة.</p>
 
   <h2>الصوت</h2>
   <p>يطلب التطبيق إذن المايك. يستخدمه فقط وأنت فاتح نافذة المايك، ويحوّل كلامك إلى نص عن طريق خدمة التعرف على الكلام في هاتفك (من Google عادةً). لا يسجّل التطبيق صوتك ولا يحفظه ولا يرسله لنا، ويتوقف المايك أول ما تضغط "تم" أو "إلغاء".</p>
@@ -76,7 +81,7 @@
 
 <section class="en" dir="ltr" lang="en">
   <h1 style="font-size:22px;margin-top:0">Privacy Policy (English)</h1>
-  <p class="muted">Last updated: November 13, 2026</p>
+  <p class="muted">Last updated: November 15, 2026</p>
 
   <h2>In short</h2>
   <p>No sign-up. We don't know your name, phone number or location. Your cart, shopping list and prices stay on your phone.</p>
@@ -86,14 +91,19 @@
     <li>Your language, budget, and the emirate you chose for prayer times.</li>
     <li>Your current cart and shopping list.</li>
     <li>Product names and the last price for each barcode you scanned (so the app can remind you next time).</li>
+    <li>The stores you pick and your prices there, plus your trip totals and monthly spending.</li>
   </ul>
   <p>This data never reaches us, and it is deleted when you uninstall the app or clear its data.</p>
 
   <h2>Camera and photos</h2>
   <ul>
-    <li><b>Barcodes:</b> the app uses Google's barcode scanner (Google Play services). The app does not get camera permission; it only receives the barcode number.</li>
-    <li><b>Price photos:</b> when you photograph a shelf tag, the numbers are read on your phone (offline). The photo is kept temporarily on your phone, replaced by the next one, and never sent anywhere.</li>
+    <li><b>Camera:</b> the app asks for camera permission to read shelf price labels live. Frames are read on your phone (offline) and are never stored or sent anywhere. The camera runs only while the scanning screen is open.</li>
+    <li><b>Barcodes:</b> read on your phone with Google's ML Kit; the app only receives the barcode number.</li>
+    <li><b>Price and receipt photos:</b> numbers and items are read on your phone (offline) to compare with your cart. The photo is kept temporarily on your phone, replaced by the next one, and never sent anywhere.</li>
   </ul>
+
+  <h2>Translation</h2>
+  <p>So items get ticked off your list even when a label is in another language, the app translates item names (Arabic ↔ English) on your phone using Google's ML Kit translator. The language file is downloaded from Google once; after that translation works offline and your list is never sent anywhere.</p>
 
   <h2>Voice</h2>
   <p>The app asks for microphone permission. It uses the mic only while the mic window is open, turning your words into text through your phone's speech recognition service (usually from Google). The app does not record, store or send us your voice, and the mic stops as soon as you tap "Done" or "Cancel".</p>
