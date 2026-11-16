@@ -1,0 +1,29 @@
+name: Auto fuel prices (all Gulf countries)
+
+on:
+  schedule:
+    # كل ساعتين في أيام الإعلان: آخر الشهر وأوله (الإمارات، قطر، عمان، الكويت، البحرين) ونص الشهر (السعودية)
+    - cron: "15 */2 27-31 * *"
+    - cron: "15 */2 1-5 * *"
+    - cron: "15 */3 9-14 * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  issues: write
+  actions: write
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install tools
+        run: pip install requests google-auth
+      - name: Find and apply new prices
+        env:
+          FIREBASE_KEY: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+        run: python3 -u scripts/auto_prices.py
