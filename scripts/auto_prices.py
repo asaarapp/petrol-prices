@@ -109,7 +109,9 @@ def extract(cfg, text, current):
 
 def news(cfg, en_name, year):
     query = f"{cfg['name']} fuel prices {en_name} {year}"
+    # مصدرين: أخبار Bing + أخبار Google (تلقط خبر وام بسرعة)
     rss = fetch("https://www.bing.com/news/search?format=rss&q=" + urllib.parse.quote(query))
+    rss += fetch("https://news.google.com/rss/search?hl=en-AE&gl=AE&ceid=AE:en&q=" + urllib.parse.quote(query + " when:3d"))
     found = []
     for it in re.findall(r"<item>(.*?)</item>", rss, flags=re.S):
         title = html.unescape(re.sub(r"<.*?>", "", (re.search(r"<title>(.*?)</title>", it, re.S) or [None, ""])[1]))
