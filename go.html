@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<title>تطبيقات أسعار</title>
+<style>
+  :root { --bg:#ffffff; --fg:#111827; --muted:#6b7280; --card:#f3f4f6; --btn:#1a73e8; }
+  @media (prefers-color-scheme: dark) { :root { --bg:#0b1220; --fg:#f9fafb; --muted:#9ca3af; --card:#1f2937; } }
+  * { box-sizing:border-box }
+  body { margin:0; background:var(--bg); color:var(--fg); font-family:system-ui,-apple-system,"Segoe UI",Tahoma,sans-serif;
+         display:flex; min-height:100vh; align-items:center; justify-content:center; padding:24px 16px; text-align:center }
+  .box { max-width:420px; width:100% }
+  img { width:112px; height:112px; border-radius:26px; box-shadow:0 6px 20px rgba(0,0,0,.15) }
+  h1 { font-size:26px; margin:18px 0 6px }
+  p { color:var(--muted); font-size:17px; line-height:1.6; margin:6px 0 18px }
+  a.btn { display:block; background:var(--btn); color:#fff; text-decoration:none; font-weight:700; font-size:18px;
+          padding:14px 18px; border-radius:14px; margin:10px 0 }
+  .soon { background:var(--card); border-radius:14px; padding:14px; font-size:16px; margin:10px 0 }
+</style>
+</head>
+<body>
+<div class="box" id="box"></div>
+<script>
+// صفحة تحويل روابط المشاركة: لا تجمع أي بيانات، ولا تستخدم كوكيز ولا أدوات تتبع.
+(function () {
+  var APPS = {
+    petrol:   { pkg:"com.saeed.petrolprices",   icon:"store/petrol-icon-512.png",   ar:"أسعار البترول",  en:"Petrol Prices",   ios:"" },
+    gold:     { pkg:"com.saeed.goldprices",     icon:"store/gold-icon-512.png",     ar:"أسعار الذهب",    en:"Gold Prices",     ios:"" },
+    currency: { pkg:"com.saeed.currencyprices", icon:"store/currency-icon-512.png", ar:"أسعار العملات",  en:"Currency Prices", ios:"" },
+    products: { pkg:"com.saeed.productprices",  icon:"store/products-icon-512.png", ar:"أسعار المنتجات", en:"Grocery Prices",  ios:"" },
+    jamiya:   { pkg:"com.saeed.jamiya",         icon:"store/jamiya-icon-512.png",   ar:"الجمعية",        en:"Jamiya",          ios:"" }
+  };
+  var q = new URLSearchParams(location.search);
+  var app = APPS[q.get("a")] || APPS.petrol;
+  var r = q.get("r") || "";
+  if (!/^[A-Za-z0-9_-]{10,64}$/.test(r)) r = "";
+
+  var play = "https://play.google.com/store/apps/details?id=" + app.pkg +
+             (r ? "&referrer=" + encodeURIComponent("ref=" + r) : "");
+  var ua = navigator.userAgent || "";
+  var isAndroid = /Android/i.test(ua);
+  var isIOS = /iPhone|iPad|iPod/i.test(ua) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+  var ar = /^ar/i.test(navigator.language || "ar");
+
+  // أندرويد: تحويل مباشر إلى Google Play
+  if (isAndroid) { location.replace(play); }
+
+  var t = ar ? {
+    sub: "تطبيق مجاني من تطبيقات «أسعار»",
+    play: "التحميل من Google Play",
+    ios: "تحميل من App Store",
+    soon: "النسخة الخاصة بالآيفون ستتوفر قريبًا على App Store."
+  } : {
+    sub: "A free app from the Asaar family",
+    play: "Get it on Google Play",
+    ios: "Download on the App Store",
+    soon: "The iPhone version is coming soon to the App Store."
+  };
+  if (!ar) { document.documentElement.lang = "en"; document.documentElement.dir = "ltr"; }
+
+  var box = document.getElementById("box");
+  var img = document.createElement("img"); img.src = app.icon; img.alt = "";
+  var h = document.createElement("h1"); h.textContent = ar ? app.ar : app.en;
+  var p = document.createElement("p"); p.textContent = t.sub;
+  box.appendChild(img); box.appendChild(h); box.appendChild(p);
+
+  function btn(href, text) { var a = document.createElement("a"); a.className = "btn"; a.href = href; a.textContent = text; a.rel = "noopener"; box.appendChild(a); }
+  if (isIOS) {
+    if (app.ios) { location.replace(app.ios); btn(app.ios, t.ios); }
+    else { var s = document.createElement("div"); s.className = "soon"; s.textContent = t.soon; box.appendChild(s); }
+  } else {
+    btn(play, t.play);
+  }
+})();
+</script>
+</body>
+</html>
