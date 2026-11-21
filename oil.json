@@ -1,11 +1,11 @@
 {
   "date": "2026-11-20",
   "source": "Yahoo",
-  "brent": 89.87,
-  "change": -2.11,
-  "month_avg": 95.16,
+  "brent": 92.57,
+  "change": 0.59,
+  "month_avg": 95.34,
   "prev_month_avg": 108.34,
-  "pct": -12.2,
+  "pct": -12.0,
   "trend": "down",
   "strength": "strong",
   "days": 15,
@@ -24,6 +24,6 @@
     93.14,
     91.95,
     91.98,
-    89.87
+    92.57
   ]
 }
